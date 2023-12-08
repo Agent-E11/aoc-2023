@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Display;
 
 // ----- Day 1 -----
 
@@ -93,4 +94,61 @@ pub fn find_min(games: Vec<Game>) -> Vec<(usize, usize, usize)> {
         }
         maxes
     }).collect()
+}
+
+// ----- Day 3 -----
+
+pub fn create_matrix(input: &str) -> Vec<Vec<char>> {
+    let mut matrix: Vec<Vec<char>> = input.lines().map(|line| {
+        line.chars().collect()
+    }).collect();
+
+    let max = matrix.iter().fold(0, |acc, x| {
+        acc.max(x.len())
+    });
+
+    for line in &mut matrix {
+        line.resize(max, '.');
+    }
+
+    matrix
+}
+
+pub fn print_matrix<T: Display>(matrix: &Vec<Vec<T>>) {
+    for line in matrix {
+        for item in line {
+            print!("{item}");
+        }
+        println!();
+    }
+}
+
+pub fn get_neighbors<T>(matrix: &[Vec<T>], index: (usize, usize)) -> Vec<&T> {
+    const NEIGHBOR_OFFSETS: [(i32, i32); 8] = [ // (y, x)
+        (-1, -1), (-1, 0), (-1, 1),
+        ( 0, -1),          ( 0, 1),
+        ( 1, -1), ( 1, 0), ( 1, 1),
+    ];
+
+    let mut neighbors: Vec<&T> = Vec::new();
+    for offset in NEIGHBOR_OFFSETS {
+        let y = index.0 as i32 + offset.0;
+        let x = index.1 as i32 + offset.1;
+        if y < 0 || x < 0 {
+            continue;
+        }
+        let (y, x): (usize, usize) =
+            (y.try_into().unwrap(), x.try_into().unwrap());
+        
+        match &matrix.get(y) {
+            None => continue,
+            Some(v) => match v.get(x) {
+                None => continue,
+                Some(n) => neighbors.push(n),
+                
+            }
+        }
+    }
+
+    neighbors
 }
