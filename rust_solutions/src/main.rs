@@ -2,25 +2,36 @@ use rust_solutions::{
     parse_games,
     find_min,
     create_matrix,
-    get_neighbors,
-    print_matrix,
+    get_part_numbers, Card,
 };
 fn main() {
-    run_day_3();
+    run_day_4();
 }
 
-fn run_day_3() {
+fn run_day_4() {
+    let input = include_str!("../../inputs/tests/day-4.txt");
+    println!("Input:\n{}", input);
+
+    let _cards: Vec<_> = input.lines().map(|line| {
+        let card = Card::try_from(line).unwrap();
+        println!("{:?}", card);
+        card
+    }).collect();
+}
+
+fn _run_day_3_pt_1() {
     let input = include_str!("../../inputs/day-3.txt");
     println!("{input}");
 
     let matrix = create_matrix(input);
-    // print_matrix(&matrix);
 
-    println!("(1, 1): {:?}", get_neighbors(&matrix, (1, 1)));
-    println!("(0, 5): {:?}", get_neighbors(&matrix, (0, 5)));
-    println!("(2, 1): {:?}", get_neighbors(&matrix, (2, 1)));
-    println!("(1, 8): {:?}", get_neighbors(&matrix, (1, 8)));
-    println!("(1, 10): {:?}", get_neighbors(&matrix, (1, 10)));
+    let mut part_nums = get_part_numbers(&matrix);
+
+    part_nums.sort();
+    part_nums.dedup();
+
+    let sum: u32 = part_nums.into_iter().sum();
+    println!("Sum: {sum}");
 }
 
 fn _run_day_2() {

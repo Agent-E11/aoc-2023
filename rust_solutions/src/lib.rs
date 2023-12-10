@@ -1,5 +1,7 @@
-use std::collections::HashMap;
+use core::num;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
+use std::hash::Hash;
 
 // ----- Day 1 -----
 
@@ -97,6 +99,21 @@ pub fn find_min(games: Vec<Game>) -> Vec<(usize, usize, usize)> {
 }
 
 // ----- Day 3 -----
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct PartNumber {
+    pub y: usize,
+    pub x: usize,
+    pub num: u32,
+}
+
+impl std::iter::Sum<PartNumber> for u32 {
+    fn sum<I: Iterator<Item = PartNumber>>(iter: I) -> Self {
+        iter.fold(0, |acc, x| acc + x.num)
+    }
+}
+// impl std::iter::Sum for PartNumber {
+//     k
+// }
 
 pub fn create_matrix(input: &str) -> Vec<Vec<char>> {
     let mut matrix: Vec<Vec<char>> = input.lines().map(|line| {
@@ -114,7 +131,7 @@ pub fn create_matrix(input: &str) -> Vec<Vec<char>> {
     matrix
 }
 
-pub fn print_matrix<T: Display>(matrix: &Vec<Vec<T>>) {
+pub fn print_matrix<T: Display>(matrix: &[Vec<T>]) {
     for line in matrix {
         for item in line {
             print!("{item}");
@@ -123,14 +140,14 @@ pub fn print_matrix<T: Display>(matrix: &Vec<Vec<T>>) {
     }
 }
 
-pub fn get_neighbors<T>(matrix: &[Vec<T>], index: (usize, usize)) -> Vec<&T> {
+pub fn get_neighbors_index<T>(matrix: &[Vec<T>], index: (usize, usize)) -> Vec<(usize, usize, &T)> {
     const NEIGHBOR_OFFSETS: [(i32, i32); 8] = [ // (y, x)
         (-1, -1), (-1, 0), (-1, 1),
         ( 0, -1),          ( 0, 1),
         ( 1, -1), ( 1, 0), ( 1, 1),
     ];
 
-    let mut neighbors: Vec<&T> = Vec::new();
+    let mut neighbors: Vec<(usize, usize, &T)> = Vec::new();
     for offset in NEIGHBOR_OFFSETS {
         let y = index.0 as i32 + offset.0;
         let x = index.1 as i32 + offset.1;
@@ -144,11 +161,132 @@ pub fn get_neighbors<T>(matrix: &[Vec<T>], index: (usize, usize)) -> Vec<&T> {
             None => continue,
             Some(v) => match v.get(x) {
                 None => continue,
-                Some(n) => neighbors.push(n),
-                
+                Some(n) => neighbors.push((y, x, n)),
             }
         }
     }
 
     neighbors
+}
+
+// TODO: Do more tests for this
+pub fn get_full_number(matrix: &[Vec<char>], index: &(usize, usize)) -> Option<PartNumber> {
+    if !matrix
+        .get(index.0)?
+        .get(index.1)?
+        .is_numeric()
+    {
+        None?
+    }
+
+    let mut start_index = index.1;
+    let mut end_index = index.1;
+    println!("start_index: {}", start_index);
+    println!("end_index: {}", end_index);
+    if let Some(row) = matrix.get(index.0) {
+        println!("valid row index: {}", index.0);
+
+        if start_index > 0 {
+            while let Some(c) = row.get(start_index-1) {
+                println!("start_index: {}", start_index);
+                if c.is_numeric() {
+                    start_index -= 1;
+                } else { break; }
+                if start_index == 0 { break; }
+            }
+        }
+
+        if end_index < row.len()-1 {
+            while let Some(c) = row.get(end_index+1) {
+                if c.is_numeric() {
+                    end_index += 1;
+                } else { break; }
+            }
+        }
+
+        let num_string: String = row.get(start_index..end_index+1).unwrap()
+            .iter()
+            .collect::<String>();
+
+        Some(PartNumber {
+            y: index.0,
+            x: start_index,
+            num: num_string.parse().unwrap(),
+        })
+
+    } else {
+        None
+    }
+}
+
+pub fn get_part_numbers(matrix: &[Vec<char>]) -> Vec<PartNumber> {
+    let mut parts: Vec<PartNumber> = vec![];
+    // Loop through rows in matrix, and items in rows
+    for (y, row) in matrix.iter().enumerate() {
+        for (x, item) in row.iter().enumerate() {
+            // Check if the item is not a number and not '.'
+            if !item.is_numeric() && item != &'.' {
+                // Loop through its neighbors
+                for (n_y, n_x, neighbor) in get_neighbors_index(matrix, (y, x)) {
+                    if neighbor.is_numeric() {
+                        if let Some(part) = get_full_number(matrix, &(n_y, n_x)) {
+                            parts.push(part);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    parts
+}
+
+pub fn remove_duplicates<T: Hash + Eq>(list: Vec<T>) -> Vec<T> {
+    let set: HashSet<_> = list.into_iter().collect();
+    set.into_iter().collect()
+}
+
+// ----- Day 4 -----
+
+#[derive(Debug)]
+pub struct Card {
+    pub index: usize,
+    pub winning_nums: Vec<u32>,
+    pub my_nums: Vec<u32>,
+}
+impl TryFrom<&str> for Card {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let value = match value.strip_prefix("Card") {
+            None => Err(String::from("Card must start with `Card`"))?,
+            Some(v) => v.trim(),
+        };
+
+        let (idx_str, nums_str) = match value.split_once(':') {
+            None => Err(String::from("Card must contain a `:`"))?,
+            Some(strs) => strs,
+        };
+
+        let index = idx_str.parse::<usize>().map_err(|_| String::from("Card must have a valid index"))?;
+
+        let (winning_nums_str, my_nums_str) = match nums_str.split_once('|') {
+            None => Err(String::from("Card numbers must be separated with a `|`"))?,
+            Some((w, m)) => (w.trim(), m.trim()),
+        };
+
+        let winning_nums = winning_nums_str.split(' ').filter(|x| x != &"").map(|num| {
+            num.parse::<u32>()
+        })
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| String::from("All numbers must be valid"))?;
+
+        let my_nums = my_nums_str.split(' ').filter(|x| x != &"").map(|num| {
+            num.parse::<u32>()
+        })
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| String::from("All numbers must be valid"))?;
+
+        Ok(Card { index, winning_nums, my_nums })
+    }
 }
