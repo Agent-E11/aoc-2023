@@ -248,11 +248,16 @@ pub fn remove_duplicates<T: Hash + Eq>(list: Vec<T>) -> Vec<T> {
 
 // ----- Day 4 -----
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Card {
     pub index: usize,
     pub winning_nums: Vec<u32>,
     pub my_nums: Vec<u32>,
+}
+impl Card {
+    pub fn calculate_matches(&self) -> u32 {
+        self.my_nums.iter().filter(|num| self.winning_nums.contains(num)).count() as u32
+    }
 }
 impl TryFrom<&str> for Card {
     type Error = String;
@@ -289,4 +294,28 @@ impl TryFrom<&str> for Card {
 
         Ok(Card { index, winning_nums, my_nums })
     }
+}
+
+pub fn duplicate_matches(mut cards: Vec<Card>) -> Vec<Card> {
+    println!("Starting duplicating");
+    let mut i = 0;
+    while let Some(card) = cards.get(i) {
+        if i % 10000 == 0 { println!("cards[{i:05}] = {card:?}") }
+        let matches = card.calculate_matches();
+        let index = card.index;
+
+        for j in 1..matches+1 {
+            if let Some(dup) = cards.iter().find(|c| c.index == index+j as usize) {
+                let pos = match cards.iter().position(|c| c.index == dup.index) {
+                    None => continue,
+                    Some(p) => p,
+                };
+                cards.insert(pos, dup.clone());
+            }
+        }
+
+        i += 1;
+    }
+
+    Vec::new()
 }

@@ -2,21 +2,39 @@ use rust_solutions::{
     parse_games,
     find_min,
     create_matrix,
-    get_part_numbers, Card,
+    get_part_numbers, Card, duplicate_matches,
 };
 fn main() {
-    run_day_4();
+    run_day_4_pt_2();
 }
 
-fn run_day_4() {
-    let input = include_str!("../../inputs/tests/day-4.txt");
+fn run_day_4_pt_2() {
+    let input = include_str!("../../inputs/day-4.txt");
+    // println!("{input}");
+
+    let cards: Vec<_> = input.lines().map(|line| {
+        Card::try_from(line).unwrap()
+    }).collect();
+
+    let count = duplicate_matches(cards).len();
+
+    println!("Number of cards: {count}");
+}
+
+fn run_day_4_pt_1() {
+    let input = include_str!("../../inputs/day-4.txt");
     println!("Input:\n{}", input);
 
-    let _cards: Vec<_> = input.lines().map(|line| {
+    // Generate card structs from input
+    let cards: Vec<_> = input.lines().map(|line| {
         let card = Card::try_from(line).unwrap();
         println!("{:?}", card);
         card
     }).collect();
+
+    let sum: u32 = cards.iter().map(|c| 2u32.pow(c.calculate_matches()) / 2).sum();
+
+    println!("Point total: {}", sum);
 }
 
 fn _run_day_3_pt_1() {
