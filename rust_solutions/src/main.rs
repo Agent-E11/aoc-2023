@@ -2,26 +2,30 @@ use rust_solutions::{
     parse_games,
     find_min,
     create_matrix,
-    get_part_numbers, Card, duplicate_matches,
+    get_part_numbers,
+    calc_total_cards,
+    Card,
 };
 fn main() {
     run_day_4_pt_2();
 }
 
 fn run_day_4_pt_2() {
+    // Load input
     let input = include_str!("../../inputs/day-4.txt");
-    // println!("{input}");
 
+    // Parse input into cards
     let cards: Vec<_> = input.lines().map(|line| {
         Card::try_from(line).unwrap()
     }).collect();
 
-    let count = duplicate_matches(cards).len();
+    // Calculate answer
+    let count = calc_total_cards(&cards);
 
     println!("Number of cards: {count}");
 }
 
-fn run_day_4_pt_1() {
+fn _run_day_4_pt_1() {
     let input = include_str!("../../inputs/day-4.txt");
     println!("Input:\n{}", input);
 

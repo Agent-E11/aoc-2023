@@ -1,4 +1,3 @@
-use core::num;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::Hash;
@@ -296,26 +295,23 @@ impl TryFrom<&str> for Card {
     }
 }
 
-pub fn duplicate_matches(mut cards: Vec<Card>) -> Vec<Card> {
-    println!("Starting duplicating");
-    let mut i = 0;
-    while let Some(card) = cards.get(i) {
-        if i % 10000 == 0 { println!("cards[{i:05}] = {card:?}") }
-        let matches = card.calculate_matches();
-        let index = card.index;
+pub fn calc_total_cards(cards: &[Card]) -> u32 {
+    // Create vector the same length as `cards`, initialize all counts to 1
+    let mut counts: Vec<u32> = (0..cards.len()).map(|_| 1).collect();
 
-        for j in 1..matches+1 {
-            if let Some(dup) = cards.iter().find(|c| c.index == index+j as usize) {
-                let pos = match cards.iter().position(|c| c.index == dup.index) {
-                    None => continue,
-                    Some(p) => p,
-                };
-                cards.insert(pos, dup.clone());
+    for (i, card) in cards.iter().enumerate() {
+        let matches = card.calculate_matches();
+        let count = counts[i];
+
+        // Loop through self+1 to self+matches
+        for offset in 1..(matches+1) as usize {
+            // Check if exists
+            match counts.get_mut(i+offset) {
+                None => break,
+                Some(c) => *c += count, // If it does, add the current card's count to the other card's count
             }
         }
-
-        i += 1;
     }
 
-    Vec::new()
+    counts.iter().sum()
 }
