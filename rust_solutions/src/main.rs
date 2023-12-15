@@ -5,12 +5,26 @@ use rust_solutions::{
     get_part_numbers,
     calc_total_cards,
     Card,
+    parse_almanac,
+    parse_mappings,
 };
 fn main() {
-    run_day_4_pt_2();
+    run_day_5_pt_1();
 }
 
-fn run_day_4_pt_2() {
+fn run_day_5_pt_1() {
+    let input = include_str!("../../inputs/tests/day-5.txt");
+
+    let (seeds, mappings) = parse_almanac(input);
+    println!("Seeds: {seeds:?}");
+    println!("Mappings:\n{mappings:?}");
+    
+    for i in parse_mappings(mappings) {
+        println!("{:?}", i);
+    }
+}
+
+fn _run_day_4_pt_2() {
     // Load input
     let input = include_str!("../../inputs/day-4.txt");
 

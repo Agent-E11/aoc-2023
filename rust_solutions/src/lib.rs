@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::Hash;
+use std::ops::RangeInclusive;
 
 // ----- Day 1 -----
 
@@ -314,4 +315,59 @@ pub fn calc_total_cards(cards: &[Card]) -> u32 {
     }
 
     counts.iter().sum()
+}
+
+// ----- Day 5 -----
+
+#[derive(Debug)]
+pub struct MapRange {
+    pub range: RangeInclusive<u32>,
+    pub offset: i32,
+}
+
+pub type Mapping = Vec<MapRange>;
+
+pub fn parse_almanac(input: &str) 
+-> (Vec<u32>, Vec<Vec<[u32; 3]>>) {
+
+    let mut lines = input.lines().filter(|l| l != &"");
+    let seeds: Vec<_> = lines
+        .next().unwrap()
+        .split_once(": ").unwrap()
+        .1.split(' ').map(|n| n.parse::<u32>().unwrap())
+        .collect();
+
+    lines.next(); // Skip first example line
+
+    let mut maps: Vec<Vec<[u32; 3]>> = vec![vec![]];
+    let mut i = 0;
+    for line in lines {
+        if !line.chars().next().unwrap().is_numeric() {
+            maps.push(Vec::new());
+            i += 1;
+            continue;
+        }
+
+        maps[i].push(
+            line.split(' ')
+                .map(|n| n.parse::<u32>().unwrap())
+                .collect::<Vec<_>>()
+                [0..3].try_into().unwrap()
+        )
+    }
+
+    (seeds, maps)
+}
+
+pub fn parse_mappings(mapping_collections: Vec<Vec<[u32; 3]>>) -> Vec<Mapping> {
+
+    mapping_collections.iter().map(|collection| {
+        collection.iter().map(|mapping| {
+            let start = mapping[0];
+            let end = start + mapping[2];
+            let offset = mapping[1] as i32 - start as i32;
+
+            MapRange { range: start..=end, offset }
+        }).collect::<Vec<_>>()
+    }).collect::<Vec<_>>()
 }
