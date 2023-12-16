@@ -363,11 +363,37 @@ pub fn parse_mappings(mapping_collections: Vec<Vec<[u32; 3]>>) -> Vec<Mapping> {
 
     mapping_collections.iter().map(|collection| {
         collection.iter().map(|mapping| {
-            let start = mapping[0];
+            // 0: destination range start
+            // 1: source range start
+            // 2: range length
+            let start = mapping[1];
             let end = start + mapping[2];
-            let offset = mapping[1] as i32 - start as i32;
+            let offset = mapping[0] as i32 - start as i32;
 
             MapRange { range: start..=end, offset }
         }).collect::<Vec<_>>()
     }).collect::<Vec<_>>()
+}
+/// 
+pub fn follow_mappings(initial: u32, mappings: &Vec<Mapping>) -> u32 {
+    // println!("\n\nFollowing mappings...");
+    let mut value = initial as i32;
+
+    for mapping in mappings {
+        // print!("{value} -> ");
+        // println!("\nMapping: {mapping:?}");
+        // println!("Start value: {value}");
+        for map_range in mapping {
+            // println!("Range, offset: {:?}, {}", map_range.range, map_range.offset);
+            if map_range.range.contains(&(value as u32)) {
+                // println!("Value is in range, applying offset");
+                value += map_range.offset;
+                break;
+            }
+        }
+        // println!("End value: {value}");
+        // print!("{value}; ");
+    }
+
+    value as u32
 }

@@ -6,7 +6,7 @@ use rust_solutions::{
     calc_total_cards,
     Card,
     parse_almanac,
-    parse_mappings,
+    parse_mappings, follow_mappings,
 };
 fn main() {
     run_day_5_pt_1();
@@ -17,11 +17,12 @@ fn run_day_5_pt_1() {
 
     let (seeds, mappings) = parse_almanac(input);
     println!("Seeds: {seeds:?}");
-    println!("Mappings:\n{mappings:?}");
+    // println!("Mappings:\n{mappings:?}");
     
-    for i in parse_mappings(mappings) {
-        println!("{:?}", i);
-    }
+    let parsed_almanac = parse_mappings(mappings);
+
+    let min_location: u32 = seeds.iter().map(|s| follow_mappings(*s, &parsed_almanac)).min().unwrap();
+    println!("Closest location: {}", min_location);
 }
 
 fn _run_day_4_pt_2() {
