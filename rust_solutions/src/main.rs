@@ -13,7 +13,7 @@ fn main() {
 }
 
 fn run_day_5_pt_1() {
-    let input = include_str!("../../inputs/tests/day-5.txt");
+    let input = include_str!("../../inputs/day-5.txt");
 
     let (seeds, mappings) = parse_almanac(input);
     println!("Seeds: {seeds:?}");
@@ -21,7 +21,7 @@ fn run_day_5_pt_1() {
     
     let parsed_almanac = parse_mappings(mappings);
 
-    let min_location: u32 = seeds.iter().map(|s| follow_mappings(*s, &parsed_almanac)).min().unwrap();
+    let min_location: u64 = seeds.iter().map(|s| follow_mappings(*s, &parsed_almanac)).min().unwrap();
     println!("Closest location: {}", min_location);
 }
 

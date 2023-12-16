@@ -321,25 +321,25 @@ pub fn calc_total_cards(cards: &[Card]) -> u32 {
 
 #[derive(Debug)]
 pub struct MapRange {
-    pub range: RangeInclusive<u32>,
-    pub offset: i32,
+    pub range: RangeInclusive<u64>,
+    pub offset: i64,
 }
 
 pub type Mapping = Vec<MapRange>;
 
 pub fn parse_almanac(input: &str) 
--> (Vec<u32>, Vec<Vec<[u32; 3]>>) {
+-> (Vec<u64>, Vec<Vec<[u64; 3]>>) {
 
     let mut lines = input.lines().filter(|l| l != &"");
     let seeds: Vec<_> = lines
         .next().unwrap()
         .split_once(": ").unwrap()
-        .1.split(' ').map(|n| n.parse::<u32>().unwrap())
+        .1.split(' ').map(|n| n.parse::<u64>().unwrap())
         .collect();
 
     lines.next(); // Skip first example line
 
-    let mut maps: Vec<Vec<[u32; 3]>> = vec![vec![]];
+    let mut maps: Vec<Vec<[u64; 3]>> = vec![vec![]];
     let mut i = 0;
     for line in lines {
         if !line.chars().next().unwrap().is_numeric() {
@@ -350,7 +350,7 @@ pub fn parse_almanac(input: &str)
 
         maps[i].push(
             line.split(' ')
-                .map(|n| n.parse::<u32>().unwrap())
+                .map(|n| n.parse::<u64>().unwrap())
                 .collect::<Vec<_>>()
                 [0..3].try_into().unwrap()
         )
@@ -359,7 +359,7 @@ pub fn parse_almanac(input: &str)
     (seeds, maps)
 }
 
-pub fn parse_mappings(mapping_collections: Vec<Vec<[u32; 3]>>) -> Vec<Mapping> {
+pub fn parse_mappings(mapping_collections: Vec<Vec<[u64; 3]>>) -> Vec<Mapping> {
 
     mapping_collections.iter().map(|collection| {
         collection.iter().map(|mapping| {
@@ -368,16 +368,16 @@ pub fn parse_mappings(mapping_collections: Vec<Vec<[u32; 3]>>) -> Vec<Mapping> {
             // 2: range length
             let start = mapping[1];
             let end = start + mapping[2];
-            let offset = mapping[0] as i32 - start as i32;
+            let offset = mapping[0] as i64 - start as i64;
 
             MapRange { range: start..=end, offset }
         }).collect::<Vec<_>>()
     }).collect::<Vec<_>>()
 }
 /// 
-pub fn follow_mappings(initial: u32, mappings: &Vec<Mapping>) -> u32 {
+pub fn follow_mappings(initial: u64, mappings: &Vec<Mapping>) -> u64 {
     // println!("\n\nFollowing mappings...");
-    let mut value = initial as i32;
+    let mut value = initial as i64;
 
     for mapping in mappings {
         // print!("{value} -> ");
@@ -385,7 +385,7 @@ pub fn follow_mappings(initial: u32, mappings: &Vec<Mapping>) -> u32 {
         // println!("Start value: {value}");
         for map_range in mapping {
             // println!("Range, offset: {:?}, {}", map_range.range, map_range.offset);
-            if map_range.range.contains(&(value as u32)) {
+            if map_range.range.contains(&(value as u64)) {
                 // println!("Value is in range, applying offset");
                 value += map_range.offset;
                 break;
@@ -395,5 +395,5 @@ pub fn follow_mappings(initial: u32, mappings: &Vec<Mapping>) -> u32 {
         // print!("{value}; ");
     }
 
-    value as u32
+    value as u64
 }
